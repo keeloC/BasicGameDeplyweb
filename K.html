@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>The Game</title>
+    <link rel="stylesheet" href="S.css">
+</head>
+<body>
+    <canvas id="bg"></canvas>
+    <canvas id="canvas" width="800" height="600"></canvas>
+
+    <!-- Pantalla de nombre (solo aparece la primera vez) -->
+    <div id="name-overlay">
+        <div id="name-box">
+            <div id="name-title">INGRESA TU NOMBRE</div>
+            <div id="name-sub">Aparecerá en el leaderboard global</div>
+            <form id="name-form" autocomplete="off">
+                <input
+                    id="name-input"
+                    type="text"
+                    maxlength="16"
+                    placeholder="Tu nombre..."
+                    spellcheck="false"
+                />
+                <button type="submit">JUGAR →</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="O.js"></script>
+</body>
+</html>

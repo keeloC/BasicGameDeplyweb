@@ -1,0 +1,116 @@
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    overflow: hidden;
+    background: black;
+    font-family: 'Share Tech Mono', 'Courier New', monospace;
+}
+
+#bg {
+    position: fixed;
+    top: 0; left: 0;
+    z-index: 0;
+}
+
+#canvas {
+    position: relative;
+    z-index: 1;
+    display: block;
+    margin: auto;
+    top: 100px;
+    border: 2px solid #00cfff;
+    box-shadow:
+        0 0 8px #00cfff,
+        0 0 22px rgba(0,207,255,0.45),
+        inset 0 0 10px rgba(0,207,255,0.05);
+}
+
+/* ── Pantalla de nombre ── */
+#name-overlay {
+    display: none;          /* O.js lo muestra si hace falta */
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    background: rgba(0,0,0,0.82);
+    backdrop-filter: blur(4px);
+    align-items: center;
+    justify-content: center;
+}
+
+#name-box {
+    background: linear-gradient(160deg, rgba(12,0,35,0.97), rgba(0,0,18,0.97));
+    border: 1.5px solid #ff00ff;
+    box-shadow: 0 0 24px rgba(255,0,255,0.35), inset 0 0 14px rgba(255,0,255,0.05);
+    border-radius: 12px;
+    padding: 40px 48px 36px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    min-width: 320px;
+}
+
+#name-title {
+    color: #ff00ff;
+    font-size: 22px;
+    letter-spacing: 3px;
+    text-shadow: 0 0 10px #ff00ff;
+    margin-bottom: 4px;
+}
+
+#name-sub {
+    color: rgba(200,160,220,0.7);
+    font-size: 12px;
+    letter-spacing: 1px;
+    margin-bottom: 16px;
+}
+
+#name-form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    width: 100%;
+}
+
+#name-input {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,0,255,0.5);
+    border-radius: 6px;
+    color: #fff;
+    font-family: inherit;
+    font-size: 18px;
+    padding: 10px 16px;
+    width: 100%;
+    text-align: center;
+    outline: none;
+    letter-spacing: 2px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+#name-input::placeholder { color: rgba(255,255,255,0.25); }
+#name-input:focus {
+    border-color: #ff00ff;
+    box-shadow: 0 0 10px rgba(255,0,255,0.4);
+}
+
+#name-form button {
+    background: transparent;
+    border: 1.5px solid #00cfff;
+    color: #00cfff;
+    font-family: inherit;
+    font-size: 15px;
+    letter-spacing: 3px;
+    padding: 10px 32px;
+    border-radius: 6px;
+    cursor: pointer;
+    text-shadow: 0 0 8px #00cfff;
+    box-shadow: 0 0 10px rgba(0,207,255,0.2);
+    transition: background 0.15s, box-shadow 0.15s;
+}
+#name-form button:hover {
+    background: rgba(0,207,255,0.1);
+    box-shadow: 0 0 18px rgba(0,207,255,0.45);
+}
