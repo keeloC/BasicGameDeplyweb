@@ -65,6 +65,9 @@ async function submitScore(name, score) {
 
 fetchLeaderboard();
 setInterval(fetchLeaderboard, 10000);
+setInterval(() => {
+    fetch(`${API_URL}/`).catch(() => {});
+}, 4 * 60 * 1000);
 
 // ─── dimensiones del leaderboard (para excluir del grid) ───
 const LB_X = 30, LB_Y = 30, LB_W = 200, LB_H = 215;
