@@ -1,26 +1,23 @@
-// =============================================
-// CONFIG — cambia esta URL cuando hagas deploy
-// =============================================
-const API_URL = "https://basicgamedeplyweb-production.up.railway.app"; // ← reemplaza con tu URL de Railway
 
-// =====================
-// 🎨 CANVAS FONDO
-// =====================
+const API_URL = "https://basicgamedeplyweb-production.up.railway.app"; 
+
+
+// canva fondo
+
 const bg    = document.getElementById("bg");
 const bgCtx = bg.getContext("2d");
 bg.width  = window.innerWidth;
 bg.height = window.innerHeight;
 window.addEventListener("resize", () => { bg.width = window.innerWidth; bg.height = window.innerHeight; });
 
-// =====================
-// 🎮 CANVAS JUEGO
-// =====================
+// juego canva
+
 const canvas = document.getElementById("canvas");
 const ctx    = canvas.getContext("2d");
 
-// =====================
-// 👤 NOMBRE DEL JUGADOR
-// =====================
+
+// nombre del player
+
 let playerName = localStorage.getItem("playerName") || null;
 
 function showNameScreen() {
@@ -41,9 +38,9 @@ document.getElementById("name-form").addEventListener("submit", (e) => {
     startGame();
 });
 
-// =====================
-// 🌐 LEADERBOARD GLOBAL
-// =====================
+
+// leaderboard
+
 let globalLeaderboard = [];
 
 async function fetchLeaderboard() {
@@ -121,9 +118,9 @@ function drawLeaderboardBG() {
     bgCtx.shadowBlur = 0;
 }
 
-// =====================
-// 🔥 GRID RETROWAVE
-// =====================
+
+// lineas moradas grind
+
 function getExclusionZones() {
     const rect = canvas.getBoundingClientRect();
     return [
@@ -185,9 +182,9 @@ function drawBackground() {
     requestAnimationFrame(drawBackground);
 }
 
-// =====================
-// 🎮 JUEGO
-// =====================
+
+// game
+
 const PlayerSize  = 30;
 let playerX = canvas.width / 2 - PlayerSize / 2;
 let playerY = canvas.height / 2 - PlayerSize / 2;
@@ -248,7 +245,7 @@ function gameloop() {
 
         ctx.font = "bold 40px 'Courier New', monospace";
         ctx.fillStyle = "red"; ctx.shadowColor = "red"; ctx.shadowBlur = 15;
-        ctx.fillText("Game Over", canvas.width/2 - 105, canvas.height/2 - 20);
+        ctx.fillText("FallasTePuta", canvas.width/2 - 105, canvas.height/2 - 20);
 
         ctx.font = "24px 'Courier New', monospace";
         ctx.fillStyle = "#00cfff"; ctx.shadowColor = "#00cfff"; ctx.shadowBlur = 10;
