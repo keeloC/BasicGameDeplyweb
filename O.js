@@ -1,7 +1,7 @@
 // =============================================
 // CONFIG — cambia esta URL cuando hagas deploy
 // =============================================
-const API_URL = "https://basicgamedeplyweb-production.up.railway.app/"; // ← reemplaza con tu URL de Railway
+const API_URL = "https://basicgamedeplyweb-production.up.railway.app"; // ← reemplaza con tu URL de Railway
 
 // =====================
 // 🎨 CANVAS FONDO
@@ -50,7 +50,9 @@ async function fetchLeaderboard() {
     try {
         const res  = await fetch(`${API_URL}/scores`);
         globalLeaderboard = await res.json();
-    } catch (_) {}
+    } catch (err) {
+        console.log("ERROR", err)
+    }
 }
 
 async function submitScore(name, score) {
@@ -61,7 +63,7 @@ async function submitScore(name, score) {
             body: JSON.stringify({ name, score })
         });
         await fetchLeaderboard();
-    } catch (_) {}
+    } catch (err) {"ERROR", err}
 }
 
 fetchLeaderboard();
