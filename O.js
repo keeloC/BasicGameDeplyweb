@@ -266,7 +266,7 @@ function gameloop() {
 
         ctx.font = "bold 40px 'Courier New', monospace";
         ctx.fillStyle = "red"; ctx.shadowColor = "red"; ctx.shadowBlur = 15;
-        ctx.fillText("Game Over", canvas.width/2 - 105, canvas.height/2 - 20);
+        ctx.fillText("FallasTePuta", canvas.width/2 - 105, canvas.height/2 - 20);
 
         ctx.font = "24px 'Courier New', monospace";
         ctx.fillStyle = "#00cfff"; ctx.shadowColor = "#00cfff"; ctx.shadowBlur = 10;
