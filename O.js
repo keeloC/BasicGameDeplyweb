@@ -1,22 +1,37 @@
 
-const API_URL = "https://basicgamedeplyweb-production.up.railway.app"; 
+const API_URL = "https://basicgamedeplyweb-production.up.railway.app";
 
 
-// canva fondo
+// CANVAS FONDO
 
 const bg    = document.getElementById("bg");
 const bgCtx = bg.getContext("2d");
 bg.width  = window.innerWidth;
 bg.height = window.innerHeight;
-window.addEventListener("resize", () => { bg.width = window.innerWidth; bg.height = window.innerHeight; });
 
-// juego canva
+// CANVAS JUEGO
 
 const canvas = document.getElementById("canvas");
 const ctx    = canvas.getContext("2d");
 
+//Cache de zonas 
+let cachedGameZone = null;
+function getGameZone() {
+    if (!cachedGameZone) {
+        const rect = canvas.getBoundingClientRect();
+        cachedGameZone = { x1: rect.left, y1: rect.top, x2: rect.right, y2: rect.bottom };
+    }
+    return cachedGameZone;
+}
+window.addEventListener("resize", () => {
+    cachedGameZone = null; // invalida cache al redimensionar
+    bg.width  = window.innerWidth;
+    bg.height = window.innerHeight;
+    drawBackground(); // redibuja el fondo estático
+});
 
-// nombre del player
+
+// NOMBRE DEL JUGADOR
 
 let playerName = localStorage.getItem("playerName") || null;
 
@@ -27,7 +42,6 @@ function showNameScreen() {
 function hideNameScreen() {
     document.getElementById("name-overlay").style.display = "none";
 }
-
 document.getElementById("name-form").addEventListener("submit", (e) => {
     e.preventDefault();
     const val = document.getElementById("name-input").value.trim();
@@ -39,19 +53,17 @@ document.getElementById("name-form").addEventListener("submit", (e) => {
 });
 
 
-// leaderboard
+//LEADERBOARD GLOBAL
 
 let globalLeaderboard = [];
 
 async function fetchLeaderboard() {
     try {
-        const res  = await fetch(`${API_URL}/scores`);
+        const res = await fetch(`${API_URL}/scores`);
         globalLeaderboard = await res.json();
-    } catch (err) {
-        console.log("ERROR", err)
-    }
+        drawLeaderboard(); // redibuja el leaderboard cuando llegan datos nuevos
+    } catch (_) {}
 }
-
 async function submitScore(name, score) {
     try {
         await fetch(`${API_URL}/scores`, {
@@ -60,38 +72,54 @@ async function submitScore(name, score) {
             body: JSON.stringify({ name, score })
         });
         await fetchLeaderboard();
-    } catch (err) {"ERROR", err}
+    } catch (_) {}
 }
 
 fetchLeaderboard();
 setInterval(fetchLeaderboard, 10000);
-setInterval(() => {
-    fetch(`${API_URL}/`).catch(() => {});
-}, 4 * 60 * 1000);
+// Mantiene Railway despierto
+setInterval(() => { fetch(`${API_URL}/`).catch(() => {}); }, 4 * 60 * 1000);
 
-// ─── dimensiones del leaderboard (para excluir del grid) ───
+
+// LEADERBOARD 
+
 const LB_X = 30, LB_Y = 30, LB_W = 200, LB_H = 215;
 
-function drawLeaderboardBG() {
-    const x = LB_X, y = LB_Y, w = LB_W, h = LB_H;
+// Canvas dedicado solo para el leaderboard
+const lbCanvas = document.getElementById("lb-canvas");
+const lbCtx    = lbCanvas.getContext("2d");
+lbCanvas.width  = LB_W + 20;
+lbCanvas.height = LB_H + 20;
+lbCanvas.style.position = "fixed";
+lbCanvas.style.left     = LB_X - 5 + "px";
+lbCanvas.style.top      = LB_Y - 5 + "px";
+lbCanvas.style.zIndex   = "2";
+lbCanvas.style.pointerEvents = "none";
 
-    const grad = bgCtx.createLinearGradient(x, y, x, y + h);
+function drawLeaderboard() {
+    const c = lbCtx;
+    const w = lbCanvas.width, h = lbCanvas.height;
+    c.clearRect(0, 0, w, h);
+
+    const x = 5, y = 5, bw = LB_W, bh = LB_H;
+
+    const grad = c.createLinearGradient(x, y, x, y + bh);
     grad.addColorStop(0, "rgba(10,0,30,0.93)");
     grad.addColorStop(1, "rgba(0,0,15,0.93)");
-    bgCtx.fillStyle = grad;
-    bgCtx.beginPath(); bgCtx.roundRect(x, y, w, h, 8); bgCtx.fill();
+    c.fillStyle = grad;
+    c.beginPath(); c.roundRect(x, y, bw, bh, 8); c.fill();
 
-    bgCtx.strokeStyle = "#ff00ff"; bgCtx.lineWidth = 1.5;
-    bgCtx.shadowColor = "#ff00ff"; bgCtx.shadowBlur = 8;
-    bgCtx.beginPath(); bgCtx.roundRect(x, y, w, h, 8); bgCtx.stroke();
+    // borde con glow (solo aquí está bien usar shadowBlur, no en el grid)
+    c.strokeStyle = "#ff00ff"; c.lineWidth = 1.5;
+    c.shadowColor = "#ff00ff"; c.shadowBlur = 8;
+    c.beginPath(); c.roundRect(x, y, bw, bh, 8); c.stroke();
+    c.shadowBlur = 0;
 
-    bgCtx.strokeStyle = "rgba(255,0,255,0.3)"; bgCtx.lineWidth = 1; bgCtx.shadowBlur = 0;
-    bgCtx.beginPath(); bgCtx.moveTo(x+10, y+32); bgCtx.lineTo(x+w-10, y+32); bgCtx.stroke();
+    c.strokeStyle = "rgba(255,0,255,0.3)"; c.lineWidth = 1;
+    c.beginPath(); c.moveTo(x+10, y+32); c.lineTo(x+bw-10, y+32); c.stroke();
 
-    bgCtx.shadowColor = "#ff00ff"; bgCtx.shadowBlur = 6;
-    bgCtx.fillStyle = "#ff00ff";
-    bgCtx.font = "bold 12px 'Courier New', monospace";
-    bgCtx.fillText("🌐 GLOBAL TOP 5", x + 14, y + 22);
+    c.fillStyle = "#ff00ff"; c.font = "bold 12px 'Courier New', monospace";
+    c.fillText("🌐 GLOBAL TOP 5", x + 14, y + 22);
 
     for (let i = 0; i < 5; i++) {
         const ey    = y + 55 + i * 30;
@@ -100,48 +128,38 @@ function drawLeaderboardBG() {
         const score = entry ? entry.score + "s" : "";
 
         if (i === 0 && entry) {
-            bgCtx.fillStyle = "rgba(255,0,255,0.1)";
-            bgCtx.beginPath(); bgCtx.roundRect(x+8, ey-16, w-16, 22, 4); bgCtx.fill();
+            c.fillStyle = "rgba(255,0,255,0.1)";
+            c.beginPath(); c.roundRect(x+8, ey-16, bw-16, 22, 4); c.fill();
         }
-        bgCtx.shadowBlur  = i === 0 ? 5 : 0;
-        bgCtx.fillStyle   = i === 0 ? "#fff" : "rgba(200,180,220,0.8)";
-        bgCtx.font        = i === 0 ? "bold 12px 'Courier New', monospace" : "12px 'Courier New', monospace";
-        bgCtx.fillText(`${i+1}.`, x+14, ey);
-        bgCtx.fillText(name, x+34, ey);
-        bgCtx.fillStyle = i === 0 ? "#ff88ff" : "rgba(200,160,220,0.9)";
-        bgCtx.fillText(score, x + w - 38, ey);
+        c.fillStyle = i === 0 ? "#fff" : "rgba(200,180,220,0.8)";
+        c.font      = i === 0 ? "bold 12px 'Courier New', monospace" : "12px 'Courier New', monospace";
+        c.fillText(`${i+1}.`, x+14, ey);
+        c.fillText(name, x+34, ey);
+        c.fillStyle = i === 0 ? "#ff88ff" : "rgba(200,160,220,0.9)";
+        c.fillText(score, x + bw - 38, ey);
     }
 
     if (playerName) {
-        bgCtx.shadowBlur = 0;
-        bgCtx.fillStyle  = "rgba(0,207,255,0.75)";
-        bgCtx.font       = "11px 'Courier New', monospace";
-        bgCtx.fillText(`Jugador: ${playerName}`, x + 14, y + h - 10);
+        c.fillStyle = "rgba(0,207,255,0.75)";
+        c.font      = "11px 'Courier New', monospace";
+        c.fillText(`Jugador: ${playerName}`, x + 14, y + bh - 10);
     }
-    bgCtx.shadowBlur = 0;
 }
 
 
-// lineas moradas grind
-
-function getExclusionZones() {
-    const rect = canvas.getBoundingClientRect();
-    return [
-        { x1: rect.left, y1: rect.top,  x2: rect.right, y2: rect.bottom },
-        { x1: LB_X-5,    y1: LB_Y-5,   x2: LB_X+LB_W+5, y2: LB_Y+LB_H+5 }
-    ];
-}
+// FONDO ESTÁTICO
 
 function drawBackground() {
     bgCtx.fillStyle = "black";
     bgCtx.fillRect(0, 0, bg.width, bg.height);
 
-    const zones    = getExclusionZones();
-    const gameZone = zones[0], lbZone = zones[1];
+    const gameZone = getGameZone();
+    const lbZone   = { x1: LB_X-5, y1: LB_Y-5, x2: LB_X+LB_W+5, y2: LB_Y+LB_H+5 };
     const W = bg.width, H = bg.height;
-    const horizon  = H * 0.5;
-    const vp       = { x: W / 2, y: horizon };
+    const horizon = H * 0.5;
+    const vp      = { x: W / 2, y: horizon };
 
+    // Clip para excluir canvas del juego y leaderboard
     bgCtx.save();
     bgCtx.beginPath();
     bgCtx.rect(0, 0, W, H);
@@ -149,44 +167,41 @@ function drawBackground() {
     bgCtx.rect(lbZone.x2,   lbZone.y1,   lbZone.x1  - lbZone.x2,   lbZone.y2   - lbZone.y1);
     bgCtx.clip("evenodd");
 
-    bgCtx.strokeStyle = "#ff00ff";
+    
+    bgCtx.strokeStyle = "#dd00dd";
     bgCtx.lineWidth   = 1;
-    bgCtx.shadowColor = "#ff00ff";
-    bgCtx.shadowBlur  = 6;
+    bgCtx.shadowBlur  = 0;
 
-    // horizontales retrowave (suelo + techo)
+    // Horizontales retrowave
     const numH = 32;
     for (let i = 0; i < numH; i++) {
         const t     = i / (numH - 1);
         const yDown = horizon + (H - horizon) * (t * t);
         const yUp   = horizon - horizon * (t * t);
-        bgCtx.globalAlpha = 0.22 + 0.78 * t;
+        bgCtx.globalAlpha = 0.2 + 0.8 * t;
         bgCtx.beginPath(); bgCtx.moveTo(0, yDown); bgCtx.lineTo(W, yDown); bgCtx.stroke();
         bgCtx.beginPath(); bgCtx.moveTo(0, yUp);   bgCtx.lineTo(W, yUp);   bgCtx.stroke();
     }
 
     bgCtx.globalAlpha = 1;
 
-    // verticales densas — convergen al punto de fuga
+    // Verticales densas
     const numV = 60;
     for (let i = 0; i <= numV; i++) {
         const xEdge = (i / numV) * W;
         const dist  = Math.abs(xEdge - W / 2) / (W / 2);
-        bgCtx.globalAlpha = 0.12 + 0.88 * dist;
+        bgCtx.globalAlpha = 0.1 + 0.9 * dist;
         bgCtx.beginPath(); bgCtx.moveTo(xEdge, H);   bgCtx.lineTo(vp.x, vp.y); bgCtx.stroke();
         bgCtx.beginPath(); bgCtx.moveTo(xEdge, 0);   bgCtx.lineTo(vp.x, vp.y); bgCtx.stroke();
     }
 
     bgCtx.globalAlpha = 1;
-    bgCtx.shadowBlur  = 0;
     bgCtx.restore();
-
-    drawLeaderboardBG();
-    requestAnimationFrame(drawBackground);
+    
 }
 
 
-// game
+// JUEGO
 
 const PlayerSize  = 30;
 let playerX = canvas.width / 2 - PlayerSize / 2;
@@ -195,13 +210,13 @@ let playerY = canvas.height / 2 - PlayerSize / 2;
 const keys = {};
 const speed = 15;
 const numEnemigos = 15;
-const enemies = [];
+const enemies     = [];
 const enemiesSize = 5;
-let velenemies = 2;
-let gameover   = false;
-let startTime  = Date.now();
-let record     = 0;
-let pauseStart = 0;
+let velenemies    = 2;
+let gameover      = false;
+let startTime     = Date.now();
+let record        = 0;
+let pauseStart    = 0;
 let scoreSubmitted = false;
 
 document.addEventListener("keydown", (e) => { if (e.key.startsWith("Arrow")) e.preventDefault(); keys[e.key] = true; });
@@ -218,7 +233,6 @@ function normalize(x, y) {
 function collision(ax, ay, as, bx, by, bs) {
     return ax < bx+bs && ax+as > bx && ay < by+bs && ay+as > by;
 }
-
 function initEnemies() {
     for (let i = 0; i < numEnemigos; i++) {
         const d = normalize(Math.random()*2-1, Math.random()*2-1);
@@ -237,10 +251,14 @@ function startGame() {
     requestAnimationFrame(gameloop);
 }
 
+
+// GAME LOOP 
+
 function gameloop() {
     const currentTime = (Date.now() - startTime) / 1000;
     if (!gameover && currentTime > record) record = currentTime;
     velenemies = Math.min(5 + currentTime * 0.5, 6);
+
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     if (gameover) {
@@ -248,7 +266,7 @@ function gameloop() {
 
         ctx.font = "bold 40px 'Courier New', monospace";
         ctx.fillStyle = "red"; ctx.shadowColor = "red"; ctx.shadowBlur = 15;
-        ctx.fillText("FallasTePuta", canvas.width/2 - 105, canvas.height/2 - 20);
+        ctx.fillText("Game Over", canvas.width/2 - 105, canvas.height/2 - 20);
 
         ctx.font = "24px 'Courier New', monospace";
         ctx.fillStyle = "#00cfff"; ctx.shadowColor = "#00cfff"; ctx.shadowBlur = 10;
@@ -267,9 +285,9 @@ function gameloop() {
         }
 
     } else {
-        ctx.fillStyle = "#00ff88"; ctx.shadowColor = "#00ff88"; ctx.shadowBlur = 12;
+        // Jugador
+        ctx.fillStyle = "#00ff88";
         ctx.fillRect(playerX, playerY, PlayerSize, PlayerSize);
-        ctx.shadowBlur = 0;
 
         if (keys["ArrowLeft"])  playerX -= speed;
         if (keys["ArrowRight"]) playerX += speed;
@@ -292,24 +310,25 @@ function gameloop() {
             if (enemies[i].x <= 0 || enemies[i].x >= canvas.width  - enemiesSize) enemies[i].dx *= -1;
             if (enemies[i].y <= 0 || enemies[i].y >= canvas.height - enemiesSize) enemies[i].dy *= -1;
 
-            ctx.fillStyle = "#ff3333"; ctx.shadowColor = "#ff0000"; ctx.shadowBlur = 8;
+            ctx.fillStyle = "#ff3333";
             ctx.fillRect(enemies[i].x, enemies[i].y, enemiesSize, enemiesSize);
-            ctx.shadowBlur = 0;
 
             if (collision(playerX, playerY, PlayerSize, enemies[i].x, enemies[i].y, enemiesSize)) {
                 gameover = true;
             }
         }
 
-        ctx.fillStyle = "white"; ctx.font = "18px 'Courier New', monospace"; ctx.shadowBlur = 0;
+        ctx.fillStyle = "white"; ctx.font = "18px 'Courier New', monospace";
         ctx.fillText("Tiempo: " + Math.floor(currentTime) + "s", 12, 24);
         ctx.fillStyle = "#00cfff";
         ctx.fillText("Record: " + Math.floor(record) + "s", 12, 48);
     }
+
     requestAnimationFrame(gameloop);
 }
 
 // ── arrancar ──
-drawBackground();
+drawBackground();   
+drawLeaderboard();  
 if (!playerName) showNameScreen();
 else startGame();
