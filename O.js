@@ -1,7 +1,7 @@
 // =============================================
 // CONFIG — cambia esta URL cuando hagas deploy
 // =============================================
-const API_URL = "https://TU-APP.up.railway.app"; // ← reemplaza con tu URL de Railway
+const API_URL = "https://basicgamedeplyweb-production.up.railway.app/"; // ← reemplaza con tu URL de Railway
 
 // =====================
 // 🎨 CANVAS FONDO
