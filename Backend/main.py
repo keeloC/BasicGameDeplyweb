@@ -79,3 +79,5 @@ def post_score(data: ScoreIn):
 @app.get("/")
 def root():
     return {"status": "ok", "game": "TheGame Leaderboard API"}
+
+print(results)
